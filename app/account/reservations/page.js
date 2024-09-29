@@ -1,15 +1,17 @@
 import PageHeading from "@/app/_components/PageHeading";
-import ReservationCard from "@/app/_components/ReservationCard";
+import ReservationListOptimistic from "@/app/_components/ReservationListOptimistic";
+import { auth } from "@/app/_lib/auth";
+import { getBookings } from "@/app/_lib/data-service";
 // import { useSearchParams } from "next/navigation";
 
 export const metadata = {
-  // title: {Window.location.href.split("/")[length-1]},
   title: "Reservation",
 };
-
-export default function Page() {
+// { bookings }
+export default async function Page() {
   // CHANGE
-  const bookings = [];
+  const session = await auth();
+  const bookings = await getBookings(session.user.guestId);
 
   return (
     <div>
@@ -23,11 +25,7 @@ export default function Page() {
           </a>
         </p>
       ) : (
-        <ul className="space-y-6">
-          {bookings.map((booking) => (
-            <ReservationCard booking={booking} key={booking.id} />
-          ))}
-        </ul>
+        <ReservationListOptimistic bookings={bookings} />
       )}
     </div>
   );

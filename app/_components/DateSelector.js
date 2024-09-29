@@ -1,42 +1,56 @@
 "use client";
-import { isWithinInterval } from "date-fns";
+import {
+  differenceInCalendarDays,
+  differenceInDays,
+  isPast,
+  isSameDay,
+  isWithinInterval,
+} from "date-fns";
+
 import { DayPicker } from "react-day-picker";
 import "react-day-picker/dist/style.css";
+import { useReservation } from "@/app/_components/ReservationContext";
+import Spinner from "./Spinner";
 
 function isAlreadyBooked(range, datesArr) {
   return (
-    range.from &&
-    range.to &&
+    range?.from &&
+    range?.to &&
     datesArr.some((date) =>
       isWithinInterval(date, { start: range.from, end: range.to })
     )
   );
 }
 
-function DateSelector() {
-  // CHANGE
-  const regularPrice = 23;
-  const discount = 23;
-  const numNights = 23;
-  const cabinPrice = 23;
-  const range = { from: null, to: null };
+function DateSelector({ bookedDates, settings, cabin }) {
+  const { range, setRange, resetRange } = useReservation();
 
-  // SETTINGS
-  const minBookingLength = 1;
-  const maxBookingLength = 23;
+  const { id, name, maxCapacity, regularPrice, discount, image, description } =
+    cabin;
+
+  const displayRange = isAlreadyBooked(range, bookedDates) ? {} : range;
+
+  const numNights = differenceInDays(displayRange?.to, displayRange?.from);
+  const cabinPrice = numNights * (cabin.regularPrice - discount);
 
   return (
     <div className="flex flex-col justify-between">
       <DayPicker
         className="pt-12 place-self-center"
         mode="range"
-        min={minBookingLength + 1}
-        max={maxBookingLength}
+        onSelect={(range) => setRange(range)}
+        selected={displayRange}
+        min={settings.minBookingLength + 1}
+        max={settings.maxBookingLength}
         fromMonth={new Date()}
         fromDate={new Date()}
         toYear={new Date().getFullYear() + 5}
         captionLayout="dropdown"
         numberOfMonths={2}
+        disabled={(curDate) =>
+          isPast(curDate) ||
+          bookedDates.some((date) => isSameDay(date, curDate))
+        }
       />
 
       <div className="flex items-center justify-between px-8 bg-accent-500 text-primary-800 h-[72px]">
@@ -70,7 +84,7 @@ function DateSelector() {
         {range.from || range.to ? (
           <button
             className="border border-primary-800 py-2 px-4 text-sm font-semibold"
-            onClick={() => resetRange()}
+            onClick={resetRange}
           >
             Clear
           </button>

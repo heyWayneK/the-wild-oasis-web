@@ -1,16 +1,29 @@
 "use client";
 import { useState } from "react";
+import { updateGuestAction } from "@/app/_lib/actions";
+import { useFormStatus } from "react-dom";
 
-function UpdateProfileForm({ children }) {
+function UpdateProfileForm({ guest, children }) {
   const [count, setCount] = useState();
 
-  const countryFlag = "pt.jpg";
+  // // doesnt work in FORM component. needs to be in sub component. see button
+  // const { pending, data, method, action } = useFormStatus();
+  // console.log(`*********USE FORM STATUS HOOK`, pending);
+
+  const { id, fullName, email, nationality, nationalID, countryFlag } = guest;
+
   return (
-    <form className="bg-primary-900 py-8 px-12 text-lg flex gap-6 flex-col">
+    <form
+      // updateGuest is a Server Action/ The file is a Use Client.
+      action={updateGuestAction}
+      className="bg-primary-900 py-8 px-12 text-lg flex gap-6 flex-col"
+    >
       <div className="space-y-2">
         <label>Full name</label>
         <input
           disabled
+          name="fullName"
+          defaultValue={fullName}
           className="px-5 py-3 bg-primary-200 text-primary-800 w-full shadow-sm rounded-sm disabled:cursor-not-allowed disabled:bg-gray-600 disabled:text-gray-400"
         />
       </div>
@@ -19,6 +32,8 @@ function UpdateProfileForm({ children }) {
         <label>Email address</label>
         <input
           disabled
+          name="email"
+          defaultValue={email}
           className="px-5 py-3 bg-primary-200 text-primary-800 w-full shadow-sm rounded-sm disabled:cursor-not-allowed disabled:bg-gray-600 disabled:text-gray-400"
         />
       </div>
@@ -40,16 +55,30 @@ function UpdateProfileForm({ children }) {
         <label htmlFor="nationalID">National ID number</label>
         <input
           name="nationalID"
+          defaultValue={nationalID}
           className="px-5 py-3 bg-primary-200 text-primary-800 w-full shadow-sm rounded-sm"
         />
       </div>
 
       <div className="flex justify-end items-center gap-6">
-        <button className="bg-accent-500 px-8 py-4 text-primary-800 font-semibold hover:bg-accent-600 transition-all disabled:cursor-not-allowed disabled:bg-gray-500 disabled:text-gray-300">
-          Update profile
-        </button>
+        <Button />
       </div>
     </form>
+  );
+}
+
+function Button() {
+  // useFormStatus has to in a COMPONENET that is IN the form.
+  // useFormStatus is still showing as
+  const { pending, data, method, action } = useFormStatus();
+
+  return (
+    <button
+      disabled={pending}
+      className="bg-accent-500 px-8 py-4 text-primary-800 font-semibold hover:bg-accent-600 transition-all disabled:cursor-not-allowed disabled:bg-gray-500 disabled:text-gray-300"
+    >
+      {pending ? `Updating...` : `Update profile`}
+    </button>
   );
 }
 

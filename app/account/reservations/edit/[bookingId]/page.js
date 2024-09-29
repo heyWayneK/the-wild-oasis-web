@@ -1,7 +1,37 @@
-export default function Page() {
+import { updateBookingAction } from "@/app/_lib/actions/";
+import { auth } from "@/app/_lib/auth";
+import { getBooking, getCabin } from "@/app/_lib/data-service";
+// import { SubmittingButton } from "@/app/_components/SubmittingButton";
+
+export default async function Page({ params }) {
+  const session = await auth();
+  const reservationId = params.bookingId;
+  const guestId = session.user.guestId;
+  const booking = await getBooking(reservationId);
+  const {
+    id: bookingId,
+    // created_at,
+    // startDate,
+    // endDate,
+    // numNights,
+    numGuests,
+    // cabinPrice,
+    // extrasPrice,
+    // totalPrice,
+    // status,
+    // hasBreakfast,
+    // isPaid,
+    observations,
+    cabinId,
+    guestId: bookingGuestId,
+  } = booking;
+
+  const { maxCapacity } = await getCabin(cabinId);
+
   // CHANGE
-  const reservationId = 23;
-  const maxCapacity = 23;
+  // is this teh customets booking
+  if (bookingGuestId !== guestId)
+    throw new Error("You do dont have permission to edit this booking");
 
   return (
     <div>
@@ -9,10 +39,14 @@ export default function Page() {
         Edit Reservation #{reservationId}
       </h2>
 
-      <form className="bg-primary-900 py-8 px-12 text-lg flex gap-6 flex-col">
+      <form
+        action={updateBookingAction}
+        className="bg-primary-900 py-8 px-12 text-lg flex gap-6 flex-col"
+      >
         <div className="space-y-2">
           <label htmlFor="numGuests">How many guests?</label>
           <select
+            defaultValue={numGuests}
             name="numGuests"
             id="numGuests"
             className="px-5 py-3 bg-primary-200 text-primary-800 w-full shadow-sm rounded-sm"
@@ -34,16 +68,19 @@ export default function Page() {
             Anything we should know about your stay?
           </label>
           <textarea
+            defaultValue={observations}
             name="observations"
             className="px-5 py-3 bg-primary-200 text-primary-800 w-full shadow-sm rounded-sm"
           />
         </div>
 
         <div className="flex justify-end items-center gap-6">
+          {/* <SubmittingButton>Update</SubmittingButton> */}
           <button className="bg-accent-500 px-8 py-4 text-primary-800 font-semibold hover:bg-accent-600 transition-all disabled:cursor-not-allowed disabled:bg-gray-500 disabled:text-gray-300">
-            Update reservation
+            Update Reservation
           </button>
         </div>
+        <input type="hidden" name="bookingId" value={bookingId}></input>
       </form>
     </div>
   );
